@@ -1,0 +1,32 @@
+{
+  "name": "typescript-express-starter",
+  "version": "1.0.0",
+  "description": "template for TDD with typescript, express & node",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_PATH=./dist node dist/app.js",
+    "dev": "NODE_ENV=dev nodemon -r tsconfig-paths/register src/app.ts",
+    "build": "tsc -p .",
+    "test": "NODE_ENV=test mocha --check-leaks -r ts-node/register -r tsconfig-paths/register \"src/test/**/*.spec.ts\""
+  },
+  "author": "Darian Sampare",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.14",
+    "@types/express": "^4.17.9",
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^14.14.7",
+    "@types/supertest": "^2.0.10",
+    "chai": "^4.2.0",
+    "mocha": "^8.2.1",
+    "nodemon": "^2.0.6",
+    "supertest": "^6.0.1",
+    "ts-node": "^9.0.0",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.0.5"
+  }
+}
