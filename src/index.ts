@@ -1,54 +1,67 @@
 import "reflect-metadata";
 import express, { Application, Request, Response, NextFunction } from "express";
 import { appConfig } from "config/app";
-import { createConnection } from "typeorm";
+import { createConnection, Connection } from "typeorm";
+import { logger } from "config/logger";
 import routes from "routes";
 
 export class App {
-  private app: Application = express();
-  private port: Number = appConfig.port;
+  private server: Application = express();
+  private port: Number = appConfig.APP_PORT;
+  private dbConnection: Connection | null = null;
 
   public constructor() {
     this.bootstrap();
   }
 
   public async bootstrap() {
-    this.useContainers();
-    await this.typeOrmCreateConnection();
-    this.configureServer();
-    this.startServer();
-    this.register404Page();
+    try {
+      this.useContainers();
+      await this.typeOrmCreateConnection();
+      this.configureServer();
+      this.startServer();
+      this.register404Page();
+    } catch (err) {
+      logger.error(err);
+    }
   }
 
   private useContainers() {}
 
   private async typeOrmCreateConnection() {
     try {
-      await createConnection();
+      this.dbConnection = await createConnection();
     } catch (error) {
       console.log("Caught! Cannot connect to database: ", error);
     }
   }
 
   private register404Page() {
-    this.app.get("*", function (req, res) {
+    this.server.get("*", function (req, res) {
       res.status(404).send({ status: 404, message: "Page Not Found!" });
     });
   }
 
   private configureServer() {
-    this.app.get("/", (req: Request, res: Response, next: NextFunction) => {
+    this.server.get("/", (req: Request, res: Response, next: NextFunction) => {
       res.send("Hello world!");
     });
-    this.app.use(routes);
+    this.server.use(routes);
   }
 
   private async startServer() {
-    this.app.listen(this.port, () =>
-      console.log(
-        `🚀 Server started at http://localhost:${this.port}\n🚨️ Environment: ${appConfig.node}`
+    this.server.listen(this.port, () =>
+      logger.info(
+        `🚀 Server started at http://localhost:${this.port}\n🚨️ Environment: ${appConfig.NODE_ENV}`
       )
     );
+
+    this.server.on("close", () => {
+      if (this.dbConnection) {
+        this.dbConnection.close();
+      }
+      logger.info("node server closed");
+    });
   }
 }
 
